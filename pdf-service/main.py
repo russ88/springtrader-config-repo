@@ -18,7 +18,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-app = FastAPI(title="MTI PDF Generation Service", version="1.0.0")
+app = FastAPI(title="PDF Generation Service", version="1.0.0")
 
 
 class LetterRequest(BaseModel):
@@ -97,10 +97,7 @@ def build_pdf(req: LetterRequest) -> bytes:
     elements = []
 
     # --- Letterhead ---
-    elements.append(Paragraph("MINISTRY OF TRADE AND INDUSTRY", header_style))
-    elements.append(Paragraph("Republic of Singapore", subheader_style))
-    elements.append(Paragraph("100 High Street, #09-01 The Treasury, Singapore 179434", subheader_style))
-    elements.append(Paragraph("Tel: (65) 6225 9911  |  Fax: (65) 6332 7260  |  www.mti.gov.sg", subheader_style))
+    elements.append(Paragraph("FORMAL ACKNOWLEDGEMENT", header_style))
     elements.append(Spacer(1, 3 * mm))
     elements.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor("#003366")))
     elements.append(Spacer(1, 5 * mm))
@@ -113,7 +110,7 @@ def build_pdf(req: LetterRequest) -> bytes:
 
     ref_table = Table(
         [
-            [Paragraph("<b>Our Ref:</b>", ref_style), Paragraph(f"MTI/{req.Number}", ref_style)],
+            [Paragraph("<b>Our Ref:</b>", ref_style), Paragraph(req.Number, ref_style)],
             [Paragraph("<b>Date:</b>", ref_style), Paragraph(parsed_date, ref_style)],
         ],
         colWidths=[35 * mm, None],
@@ -143,8 +140,7 @@ def build_pdf(req: LetterRequest) -> bytes:
     # --- Opening paragraph ---
     elements.append(
         Paragraph(
-            "Thank you for your enquiry. The Ministry of Trade and Industry (MTI) has received "
-            "your submission and wishes to acknowledge receipt thereof.",
+            "Thank you for your enquiry. We have received your submission and wish to acknowledge receipt thereof.",
             body_style,
         )
     )
@@ -175,7 +171,7 @@ def build_pdf(req: LetterRequest) -> bytes:
     # --- Body paragraphs ---
     elements.append(
         Paragraph(
-            "MTI will review your enquiry and endeavour to provide a substantive response within "
+            "We will review your enquiry and endeavour to provide a substantive response within "
             "<b>10 working days</b> from the date of this letter. Should additional time be required "
             "to furnish a complete reply, we will notify you accordingly.",
             body_style,
@@ -185,7 +181,7 @@ def build_pdf(req: LetterRequest) -> bytes:
     elements.append(
         Paragraph(
             "If you have any further questions or wish to provide additional information in the interim, "
-            f"please quote reference number <b>MTI/{req.Number}</b> in all correspondence.",
+            f"please quote reference number <b>{req.Number}</b> in all correspondence.",
             body_style,
         )
     )
@@ -203,15 +199,14 @@ def build_pdf(req: LetterRequest) -> bytes:
     elements.append(Paragraph("Yours sincerely,", body_style))
     elements.append(Spacer(1, 15 * mm))
     elements.append(Paragraph("<b>_______________________________</b>", body_style))
-    elements.append(Paragraph("<b>Director, Industry Development Division</b>", label_style))
-    elements.append(Paragraph("Ministry of Trade and Industry", ref_style))
+    elements.append(Paragraph("<b>Authorised Signatory</b>", label_style))
 
     elements.append(Spacer(1, 8 * mm))
     elements.append(HRFlowable(width="100%", thickness=0.5, color=colors.grey))
     elements.append(Spacer(1, 2 * mm))
     elements.append(
         Paragraph(
-            f"<i>This is a system-generated acknowledgement. Reference: MTI/{req.Number}</i>",
+            f"<i>This is a system-generated acknowledgement. Reference: {req.Number}</i>",
             ParagraphStyle(
                 "Footer",
                 parent=styles["Normal"],
@@ -235,7 +230,7 @@ def generate_pdf(req: LetterRequest):
         raise HTTPException(status_code=500, detail=f"PDF generation failed: {exc}") from exc
 
     encoded = base64.b64encode(pdf_bytes).decode("utf-8")
-    filename = f"MTI_Acknowledgement_{req.Number}.pdf"
+    filename = f"Acknowledgement_{req.Number}.pdf"
     return LetterResponse(pdf_base64=encoded, filename=filename)
 
 
